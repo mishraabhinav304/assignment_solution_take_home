@@ -34,12 +34,12 @@ jobs:
           context: .
           push: false
           load: true
-          tags: myapp:{{ github.sha }}
+          tags: myapp:${{ github.sha }}
 
       - name: Trivy Scan
         uses: aquasecurity/trivy-action@master
         with:
-          image-ref: myapp:{{ github.sha }}
+          image-ref: myapp:${{ github.sha }}
           format: 'sarif'
           output: 'trivy-results.sarif'
           severity: CRITICAL, HIGH
