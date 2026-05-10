@@ -16,7 +16,7 @@ permissions:
 env:
   AWS_REGION: us-east-1
   AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
-  ECR_REPOSITORY: myapp
+  ECR_REPOSITORY: scaler-devsecops-app
   IMAGE_TAG: ${{ github.sha }}
 
 
