@@ -1,0 +1,78 @@
+name: Build and Deploy
+
+on:
+  workflow_dispatch:
+
+  # DISABLED: This workflow will not run automatically on push.
+  # You must enable the push trigger below after implementing security fixes.
+  # push:
+  #   branches: [ main ]
+
+permissions:
+  id-token: write
+  contents: read
+  security-events: write
+
+env:
+  AWS_REGION: us-east-1
+  AWS_ACCOUNT_ID: {{ secrets.AWS_ACCOUNT_ID }}
+  ECR_REPOSITORY: myapp
+  IMAGE_TAG: ${{ github.sha }}
+
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Build Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: false
+          load: true
+          tags: myapp:{{ github.sha }}
+
+      - name: Trivy Scan
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: myapp:{{ github.sha }}
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+          severity: CRITICAL, HIGH
+      
+      - name: Upload Trivy SARIF results
+        uses: github/codeql-action/upload-sarif@v4
+        if: always()
+        with:
+          sarif_file: trivy-results.sarif
+
+      - name: Fail pipeline if critical CVEs found
+        run: |
+          if grep -q '"level":"CRITICAL"' trivy-results.sarif; then
+            echo "Critical vulnerabilities found in container image"
+            exit 1
+          fi
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+        role-to-assume: arn:aws:iam::${{ env.AWS_ACCOUNT_ID }}:role/github-actions-role
+          aws-region: us-east-1
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build and push Docker image to ECR
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: |
+            ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}
+            ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:latest
+          cache-from: type=gha
