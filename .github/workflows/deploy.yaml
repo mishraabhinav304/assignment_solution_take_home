@@ -2,11 +2,8 @@ name: Build and Deploy
 
 on:
   workflow_dispatch:
-
-  # DISABLED: This workflow will not run automatically on push.
-  # You must enable the push trigger below after implementing security fixes.
-  # push:
-  #   branches: [ main ]
+  push:
+    branches: [ main ]
 
 permissions:
   id-token: write
@@ -74,5 +71,4 @@ jobs:
           push: true
           tags: |
             ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}
-            ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:latest
           cache-from: type=gha
