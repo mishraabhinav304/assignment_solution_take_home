@@ -14,7 +14,7 @@ env:
   AWS_REGION: ap-south-1
   AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
   ECR_REPOSITORY: ernpallregistry/test
-  IMAGE_TAG: ${{ github.short_sha }}
+  IMAGE_TAG: ${{ github.sha }}
 
 jobs:
   build-and-deploy:
