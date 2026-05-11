@@ -11,11 +11,10 @@ permissions:
   security-events: write
 
 env:
-  AWS_REGION: us-east-1
+  AWS_REGION: ap-south-1
   AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
-  ECR_REPOSITORY: scaler-devsecops-app
+  ECR_REPOSITORY: ernpallregistry/test
   IMAGE_TAG: ${{ github.sha }}
-
 
 jobs:
   build-and-deploy:
@@ -58,7 +57,7 @@ jobs:
         uses: aws-actions/configure-aws-credentials@v2
         with:
           role-to-assume: arn:aws:iam::${{ env.AWS_ACCOUNT_ID }}:role/github-actions-role
-          aws-region: us-east-1
+          aws-region: ap-south-1
 
       - name: Login to Amazon ECR
         id: login-ecr
